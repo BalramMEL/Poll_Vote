@@ -32,10 +32,8 @@ A simple polling application that allows users to create polls, vote on options,
 # API Endpoints
 ## Polls
 
-### Get all polls
+### Get all polls, Create a poll, Vote on a poll
     GET /api/polls
+    POST /api/polls
+    POST /api/polls/{pollId}/vote
 
-    Response: Returns an array of all polls.
-
-#### Create a poll
-#### POST /api/polls
