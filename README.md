@@ -29,3 +29,13 @@ A simple polling application that allows users to create polls, vote on options,
     npm run dev
 
 
+# API Endpoints
+## Polls
+
+### Get all polls
+    GET /api/polls
+
+    Response: Returns an array of all polls.
+
+#### Create a poll
+#### POST /api/polls
