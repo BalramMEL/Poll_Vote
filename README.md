@@ -15,3 +15,17 @@ A simple polling application that allows users to create polls, vote on options,
 1. Clone the repository:
    ```sh
    git clone https://github.com/your-repo/polling-app.git
+
+2. Navigate to the project directory:
+    ```sh
+    cd polling-app
+
+3. Install dependencies:
+    ```sh
+    npm install
+
+4. Start the development server:
+    ```sh
+    npm run dev
+
+
