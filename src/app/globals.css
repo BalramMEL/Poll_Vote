@@ -58,7 +58,7 @@
 }
 @layer base {
   * {
-    @apply border-border overflow-hidden;
+    @apply p-0 m-0 box-border;
   }
   body {
     @apply bg-background text-foreground;
