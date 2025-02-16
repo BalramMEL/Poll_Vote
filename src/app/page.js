@@ -1,101 +1,156 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [polls, setPolls] = useState([]);
+  const [question, setQuestion] = useState("");
+  const [options, setOptions] = useState(["", ""]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    fetchPolls();
+    const interval = setInterval(fetchPolls, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchPolls = async () => {
+    try {
+      const response = await axios.get("/api/polls");
+      setPolls(response.data);
+    } catch (error) {
+      console.error("Error fetching polls:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createPoll = async () => {
+    try {
+      const filteredOptions = options.filter((opt) => opt.trim() !== "");
+      if (filteredOptions.length < 2) {
+        alert("Please add at least 2 options.");
+        return;
+      }
+      await axios.post("/api/polls", { question, options: filteredOptions });
+      setQuestion("");
+      setOptions(["", ""]);
+      fetchPolls();
+    } catch (error) {
+      console.error("Error creating poll:", error);
+    }
+  };
+
+  const vote = async (pollId, optionIndex) => {
+    try {
+      await axios.post(`/api/polls/${pollId}/vote`, { optionIndex });
+      fetchPolls();
+    } catch (error) {
+      console.error("Error voting:", error);
+    }
+  };
+
+  const calculateTotalVotes = (poll) => {
+    return poll.options.reduce((total, option) => total + option.votes, 0);
+  };
+
+  const calculatePercentage = (votes, totalVotes) => {
+    if (totalVotes === 0) return 0;
+    return ((votes / totalVotes) * 100).toFixed(2);
+  };
+
+  const filteredPolls = polls.filter((poll) => 
+    poll.question.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="container mx-auto p-6 bg-white">
+      <h1 className="text-3xl font-bold mb-6 text-center text-black">Create a Poll</h1>
+      <div className="bg-gray-100 p-6 rounded-lg shadow-md mb-6">
+        <input
+          type="text"
+          placeholder="Poll question"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-gray-500 text-black bg-white"
+        />
+        {options.map((opt, index) => (
+          <input
+            key={index}
+            type="text"
+            placeholder={`Option ${index + 1}`}
+            value={opt}
+            onChange={(e) => {
+              const newOptions = [...options];
+              newOptions[index] = e.target.value;
+              setOptions(newOptions);
+            }}
+            className="w-full p-3 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-gray-500 text-black bg-white"
+          />
+        ))}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setOptions([...options, ""])}
+            className="bg-black text-white p-2 rounded-lg hover:bg-gray-800 transition duration-200"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Add Option
+          </button>
+          <button
+            onClick={createPoll}
+            className="bg-gray-800 text-white p-2 rounded-lg hover:bg-gray-700 transition duration-200"
           >
-            Read our docs
-          </a>
+            Create Poll
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <h2 className="text-3xl font-bold mt-8 mb-6 text-center text-black">Active Polls</h2>
+      <input
+        type="text"
+        placeholder="Search polls..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full p-3 border border-gray-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-gray-500 text-black bg-white"
+      />
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPolls.map((poll) => {
+            const totalVotes = calculateTotalVotes(poll);
+            return (
+              <div key={poll._id} className="bg-gray-100 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                <h3 className="text-xl font-semibold mb-4 text-black">{poll.question}</h3>
+                {poll.options.map((option, index) => {
+                  const percentage = calculatePercentage(option.votes, totalVotes);
+                  return (
+                    <div key={index} className="my-2">
+                      <button
+                        onClick={() => vote(poll._id, index)}
+                        className="w-full bg-white text-black p-2 rounded-lg hover:bg-gray-200 transition duration-200 relative overflow-hidden border border-gray-300"
+                      >
+                        <div
+                          className="absolute top-0 left-0 h-full bg-gray-300"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                        <span className="relative">{option.text}</span>
+                      </button>
+                      <div className="flex justify-between mt-1 text-sm text-gray-700">
+                        <span>{option.votes} votes</span>
+                        <span>{percentage}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
