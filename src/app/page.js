@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [polls, setPolls] = useState([]);
@@ -71,7 +73,7 @@ export default function Home() {
       <div className="bg-gray-100 p-6 rounded-lg shadow-md mb-6">
         <input
           type="text"
-          placeholder="Poll question"
+          placeholder="Poll Question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-gray-500 text-black bg-white"
@@ -90,19 +92,20 @@ export default function Home() {
             className="w-full p-3 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-gray-500 text-black bg-white"
           />
         ))}
-        <div className="flex space-x-2">
-          <button
+        <div className="flex space-x-2 mt-2">
+          <Button
             onClick={() => setOptions([...options, ""])}
-            className="bg-black text-white p-2 rounded-lg hover:bg-gray-800 transition duration-200"
+            variant="outline"
+            className="hover:bg-black hover:text-white"
           >
             Add Option
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={createPoll}
-            className="bg-gray-800 text-white p-2 rounded-lg hover:bg-gray-700 transition duration-200"
+            className="hover:bg-white hover:text-black"
           >
             Create Poll
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -123,30 +126,32 @@ export default function Home() {
           {filteredPolls.map((poll) => {
             const totalVotes = calculateTotalVotes(poll);
             return (
-              <div key={poll._id} className="bg-gray-100 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-                <h3 className="text-xl font-semibold mb-4 text-black">{poll.question}</h3>
-                {poll.options.map((option, index) => {
-                  const percentage = calculatePercentage(option.votes, totalVotes);
-                  return (
-                    <div key={index} className="my-2">
-                      <button
-                        onClick={() => vote(poll._id, index)}
-                        className="w-full bg-white text-black p-2 rounded-lg hover:bg-gray-200 transition duration-200 relative overflow-hidden border border-gray-300"
-                      >
-                        <div
-                          className="absolute top-0 left-0 h-full bg-gray-300"
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                        <span className="relative">{option.text}</span>
-                      </button>
-                      <div className="flex justify-between mt-1 text-sm text-gray-700">
-                        <span>{option.votes} votes</span>
-                        <span>{percentage}%</span>
+              <Card key={poll._id} className="shadow-md hover:shadow-lg transition-shadow duration-200">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-black">{poll.question}</h3>
+                  {poll.options.map((option, index) => {
+                    const percentage = calculatePercentage(option.votes, totalVotes);
+                    return (
+                      <div key={index} className="my-2">
+                        <button
+                          onClick={() => vote(poll._id, index)}
+                          className="w-full bg-white text-black p-2 rounded-lg hover:bg-gray-200 transition duration-200 relative overflow-hidden border border-gray-300"
+                        >
+                          <div
+                            className="absolute top-0 left-0 h-full bg-gray-300"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                          <span className="relative">{option.text}</span>
+                        </button>
+                        <div className="flex justify-between mt-1 text-sm text-gray-700">
+                          <span>{option.votes} votes</span>
+                          <span>{percentage}%</span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
             );
           })}
         </div>
